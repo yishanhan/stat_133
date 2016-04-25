@@ -1,0 +1,52 @@
+---
+title: "Lab 5"
+author: "Yishan Han"
+date: ""
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+```{r}
+set.seed(123)
+d <- diamonds[sample(nrow(diamonds), 1000), ]
+head(d)
+```
+
+```{r}
+d %>% ggplot(aes(x = carat, y = price)) + 
+  geom_point(size = 4) + 
+  labs(title = "Diamonds", x = "Carat", y = "Price") +  
+  theme(plot.title = element_text(size = 30, colour = "blue"),  
+        axis.title.x = element_text(size = 20, colour = "red"),  
+        axis.title.y = element_text(size = 20, colour = "red"), 
+        axis.text = element_text(color = "red", size = 15),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+  geom_smooth(aes(color = cut, fill = cut)) +
+  facet_wrap(~cut, ncol = 3)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

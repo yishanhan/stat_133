@@ -1,0 +1,35 @@
+---
+title: "Lec 19 Task"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+```{r}
+CPS85 %>%
+  ggplot(aes(x = wage, color = sex)) +
+  geom_density(aes(fill = sex), alpha = 0.5) + facet_wrap(~ married) + 
+  ylab("density") + 
+  labs(title = "Density plot of Wages") +
+  theme(text = element_text(size = 20)) + xlim(0,30)
+```
+
+```{r}
+CPS85 %>%
+  ggplot(aes(x= sex, y = wage)) +
+  geom_boxplot(aes(fill = sex), outlier.colour = "black") 
+```
+

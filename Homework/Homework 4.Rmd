@@ -1,0 +1,145 @@
+---
+title: "Holiday Babies"
+author: "Yishan Han"
+date: "2/15/2016"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(mosaicData)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## 1
+```{r}
+DailyBirths <- Birthdays %>%
+  group_by(date) %>%
+  summarise(total = sum(births))
+
+DailyBirths %>%
+  ggplot(aes(x = date, y = total)) + geom_point(size = 0.5)
+
+```
+
+## 2
+a. 
+```{r}
+
+WeeklyBirths <- Birthdays %>%
+  mutate(Weeklybirth = week(Birthdays$date)) %>%
+  group_by(Weeklybirth) %>%
+  summarise(totalweekly = sum(births))
+
+WeeklyBirths %>%
+  ggplot(aes(x = Weeklybirth, y = totalweekly)) + geom_point() + xlab("Week") + ylab("Number of Births")
+
+```
+
+b. 
+```{r}
+MonthlyBirths <- Birthdays %>%
+  mutate(Monthlybirth = month(Birthdays$date)) %>%
+  group_by(Monthlybirth) %>%
+  summarise(totalmonthly = sum(births))
+
+
+MonthlyBirths %>%
+  ggplot(aes(x = Monthlybirth, y = totalmonthly)) + geom_point(size = 5) + xlab("Month") + ylab("Number of Births")
+```
+
+c. 
+
+```{r}
+DailyBirths <- Birthdays %>%
+  mutate(Dailybirth = yday(Birthdays$date)) %>%
+  group_by(Dailybirth) %>%
+  summarise(totaldaily = sum(births))
+
+DailyBirths %>%
+  ggplot(aes(x = Dailybirth, y = totaldaily)) + geom_point(size = 1) + xlab("Daily") + ylab("Number of Births")
+```
+
+3. 
+```{r}
+WeekdayBirths <- Birthdays %>%
+  mutate(Wdaybirth = wday(Birthdays$date)) %>%
+  group_by(Wdaybirth) %>%
+  summarise(Wdaybirthrate = sum(births))
+
+WeekdayBirths %>%
+  ggplot(aes(x = Wdaybirth, y = Wdaybirthrate)) + geom_point(size = 5) + xlab("Weekday") + ylab("Number of Births")
+```
+
+4. 
+```{r}
+MyTwoYears <- Birthdays %>%
+  filter(year %in% c(1985, 1986)) %>%
+  group_by(date, wday) %>%
+  summarise(totalBirths = sum(births))
+
+MyTwoYearsgraph <- MyTwoYears %>%
+  ggplot(aes(x= date, y = totalBirths, color = wday)) + geom_point(aes(color = wday))
+
+MyTwoYearsgraph
+```
+
+In this graph, we have plotted the daily births from the beginning of the year 1985 to the end of the year 1986. The dots are colored by the day of the week. Overall, there are generally more births during the weekdays, as the colors of brown, green, blue and purple appear mostly on the upper range of the graph, while the colors pink and red appear mostly on the lower range of the graph. We can also observe that there is a general cyclical trend throughout the years. There is an increase in the number of births in around September and October, and a decrease in January. This trend can be seen in both years. 
+
+## Births and Holidays
+## 5 
+```{r}
+Holidays <- read.csv("http://tiny.cc/dcf/US-Holidays.csv") %>%
+  mutate(date = lubridate::dmy(date))
+
+TwoYearHolidays <- Holidays %>%
+  filter(year == 1985 | year == 1986) 
+
+Join <- TwoYearHolidays %>%
+  full_join(MyTwoYears)
+```
+
+## 6
+
+1. 
+```{r warning = F} 
+MyTwoYearsgraph + geom_vline(data = TwoYearHolidays, aes(xintercept = as.numeric(date), color = wday(date, label = TRUE)))
+
+```
+
+2. 
+```{r warning = F}
+MyTwoYearsgraph + geom_vline(data = TwoYearHolidays, aes(xintercept = as.numeric(date), color = wday(date, label = TRUE))) + geom_text(data = Join, aes(xintercept = as.numeric(date), y = 9500, label = holiday, angle = 65), color = 'black')
+
+``` 
+
+## 7  
+```{r}
+Join <- TwoYearHolidays %>%
+  full_join(MyTwoYears)
+head(Join)
+```
+
+## 8
+```{r}
+Join1<- Join  %>%
+  mutate(is_holiday = ifelse(is.na(holiday), "no", "yes"))
+head(Join1)
+```
+
+## 9 MyTwoYears graph
+```{r}
+Join1 %>%
+  ggplot(aes(x = date, y = totalBirths)) + geom_point(aes(color = wday, size = is_holiday))
+```
+
+Our hypothesis in (5) is incorrect because of the plot generated above. Our hypothesis is that there are more birthdays during holidays. In our graph, the bigger dots show that the birth is on a holiday. However, our plot suggests that there are other days with higher number of births than on the holiday days. This shows that our hypothesis is unlikely to be correct. 
+

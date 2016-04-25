@@ -1,0 +1,99 @@
+---
+title: "Popular Names"
+author: "Yishan Han"
+date: "2/15/2016"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## Step 1
+BabyNames is the raw data from the US Social Security Administration. 
+
+* A case is a year-name-sex, for example, Jane F 1992 is a case. 
+
+Variables: 
+
+* name
+* sex
+* count
+* year
+
+## Step 3
+
+name        | popularity | year 
+------------|------------|--------
+Cora        | 1045       | 1880
+Cora        | ...        | ...
+Gertrude    | 787        | 1880
+Gertrude    | ...        | ...
+Myrtle      | 615        | 1880
+Myrtle      | ...        | ...
+
+* The variable `sex` does not appear at all 
+* The variable `popularity` is similar to the variable `count` in the raw data table, but is transformed by giving the total portion of selected baby names over the total number of babies born in the given year. This gives us a more accurate representation of how popular the names were in a given year. 
+
+## Step 4
+
+* The cases in the glyph-ready table have been filtered out by the names for all years. 
+* Yes, the cases have been grouped by `name` and `year`. We also summarised the `count` to find the sum of the `count` for when the `name` and `year` are the same. In this way, we can aggregate the count for the names that appear twice in one year due to different sexes.  
+* Yes, the variable `popularity` has been introduced. The relationship between `popularity` and `count` is that `popularity` is the proportion of the count of `names` over the total number of babies born in each chosen year.  
+
+## Step 5
+
+1. Create a table for the baby names and filter by names of interest
+2. Select the columns `name`, `count` and `year` 
+3. Group by the columns of `name` and `year`
+4. Add up the total of `count` for the names that are repeated in every year
+5. Create another table based on the first `BabyNames` data table by grouping by `year`.
+6. Summarise the total `count` of all names in a certain year. This allows us to find the total number of babies born in a certain year. 
+7. Join the two tables by `year`
+8. Create another column and call it `Popularity`, which is the proportion of number of `name` in a `year` over the total number of babies born. 
+9. Join the two tables together and find the popularity of the names by dividing the count by the total number of babies born in the year
+
+## Step 7
+```{r warning = FALSE}
+BabyNames3 <- BabyNames %>%
+  filter(name %in% c("Cora", "Gertrude", "Myrtle")) %>%
+  select(name, count, year) %>%
+  group_by(name,year) %>%
+  summarise(count = sum(count))
+BabyNames3
+
+Total <- BabyNames %>%
+  group_by(year) %>%
+  summarise(totalinyear = sum(count))
+Total
+
+Join <- BabyNames3 %>% 
+  full_join(Total) %>%
+  mutate(Popularity = count/totalinyear)%>%
+  group_by(name,year) 
+Join
+
+```
+## Graph of Cora, Gertrude and Myrtle
+```{r}
+Join %>%
+  ggplot(aes(x= year, y = Popularity, group = name)) + geom_line(size = 1, alpha = 0.5, aes(color = name)) + ylab("Popularity") + xlab("Year") + theme(legend.position = 'top')
+```
+
+
+
+
+
+
+
+
+

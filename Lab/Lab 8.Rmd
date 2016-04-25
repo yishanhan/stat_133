@@ -1,0 +1,164 @@
+---
+title: "Lab 8"
+author: "Yishan Han"
+date: "3/9/16"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## 1 
+
+```{r}
+vec = 1:50
+vec[1:49] <- vec[1:49] ^ 2
+```
+
+## 2 
+a. 
+`[0, 2, 4, 6, 8]`
+
+b.
+`[NA, NA, 4, 6, 8]`
+
+c. 
+`0, 0, 0, 0, 0]`
+
+d. 
+`0`
+
+## 3
+The lapply function in R operates on list and vector and returns a list.
+
+## 4 
+a. 
+```{r}
+set.seed(1337)
+m <- matrix(runif(15000, -3, 3), ncol = 3)
+
+m.ssq.loop <- rep(0, nrow(m))
+  
+for(i in 1:nrow(m)){
+  m.ssq.loop[i] <- sum(m[i,]^2)
+}
+
+head(m.ssq.loop)
+
+m.ssq.apply <- rep(0,nrow(m))
+m.ssq.apply <- apply(m,1,function(x) {
+  return(sum(x^2))
+})
+
+head(m.ssq.apply)
+
+```
+
+b. 
+```{r}
+equal = !any((m.ssq.apply == m.ssq.loop) ==F)
+equal
+```
+
+
+## 5
+a. 
+```{r}
+Year <- c(2000, 2001)
+Algeria <- c(7 ,9)
+Brazil <- c(12, NA)
+Columbia <- c(16, 18)
+
+table1 <- data.frame(Year, Algeria, Brazil, Columbia)
+table1
+
+table2 <- table1 %>%
+  gather(key = Country, value = Value, Algeria, Brazil, Columbia) %>% 
+  select(Country, Year, Value)
+```
+
+b. 
+```{r}
+avg <- table2 %>%
+  group_by(Year) %>%
+  mutate(Average = mean(Value, na.rm = TRUE))
+
+table3 <- avg %>%
+  spread(key = Country, value = Value) %>%
+  select(Year, Algeria, Brazil, Columbia, Average)
+```
+
+## 6
+a. 
+Dots, line 
+
+b. 
+color of dots, x and y positions 
+
+c. 
+Sex, x and y position are mapped to the color of the lines
+Sex is mapped to the color of the dots 
+Education is mapped to the x position 
+Wage is mapped to the y position 
+
+d. 
+Sex - Qualitative 
+Education - Quantitative
+Wage - Quantitative
+
+e. 
+X axis labels, y axis labels, the legend on the right, the title of the graph
+
+f. 
+```{r}
+CPS85 %>%
+  ggplot(aes(x = educ, y = wage, color = sex)) + geom_point() + geom_smooth(aes(color = sex), method = "lm") + labs(title = "Wage vs. Education in CPS85") + theme(
+    plot.title = element_text(size = 20, color = "black")) + ylim(0,15) 
+```
+
+## 7
+a.
+```{r}
+my.string <- "ggplot2 is a data visualization package for the statistical programming language R"
+
+SplitChars <- function(x) {
+  x1 <- strsplit(x, "")
+  return(unlist(x1))
+}
+
+SplitChars(my.string)
+```
+b. 
+```{r}
+count <- 0
+for (i in 1:length(SplitChars(my.string)
+)) {
+  if (grepl("[asRr]", SplitChars(my.string)
+[i])){
+    count <- count + 1
+  }
+}
+count
+```
+
+c. 
+```{r}
+Reverse <- function(x) {
+  reverse <- rev(x)
+  return(reverse)
+}
+my.string %>%
+  SplitChars %>% Reverse
+```
+
+

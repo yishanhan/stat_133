@@ -1,0 +1,30 @@
+---
+title: "UCB vs UCLA vs UCSD"
+author: "Yishan Han"
+date: "4/23/16"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+data <- read.csv("crimes.csv")
+
+```{r}
+data1 <- data %>%
+  mutate(grepl("SEX", Description))
+data %>%
+  grepl("SEX", Description)
+#spliting up description
+```
+

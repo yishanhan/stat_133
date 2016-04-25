@@ -1,0 +1,170 @@
+---
+title: "Midterm Review Sheet"
+author: "Yishan Han"
+date: "7th March 2016"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+# Chapter 3: Classifying Expressions
+
+```{r}
+BabyNames %>%
+  filter(name == "Arjun") %>%
+  summarise(total = sum(count))
+```
+* `BabyNames` is the data table
+* Functions: `filter`, `summarise`, `sum` 
+* Named argument `total` 
+* string `"Arjun"` is a constant
+* `name` and `count` are variables 
+
+```{r}
+BabyNames %>% nrow() # How many cases in the table
+BabyNames %>% names() # The names of the variables 
+BabyNames %>% head(3) # the first 3 cases 
+BabyNames %>% str() # view of the first few cases and variable structure
+BabyNames %>% tail() # shows the last few cases
+```
+
+# Functions and Explanations (Chapter 7)
+## Frameworks
+
+**3 types of functions:**
+
+**1. Reduction function:**
+* Input: variable
+* Output: Scalar 
+
+```{r eval = FALSE}
+mean() 
+sum()
+n() #find how many cases there are
+
+min() 
+max()
+median() 
+sd()
+n_distinct() # how many different levels are there among the cases
+
+```
+
+**2. Transformation functions:**
+* Input: one or more existing variables 
+* Output: a new variable 
+
+Often mathematical operations
+```{r eval = FALSE}
+weight/height
+log10(population)
+round(age)
+< 
+>
+== # matches exactly
+%in% # is one of. eg. age %in% c(18,19,20)  or name %in% c("abby", "abe")
+ifelse(age > 18, "voter", "non-voter") # if condition is true, then "voter", if not, then non-voter
+```
+
+**3. Data verbs:** 
+* Input: existing data table
+* Ouput: new data table
+
+### Examples
+#### Filter
+```{r results = "hide"}
+BabyNames %>%
+  filter(year > 1990, sex == "F") # will pass through only those cases that pass ALL the test
+
+BabyNames %>%
+  filter(year > 1990 | sex == "F") # pass through either or 
+
+BabyNames %>%
+  filter(year %in% c(1980, 1990, 1991, 1995))
+```
+
+```{r}
+BabyNames %>%
+  filter(name == "Prince") %>% # filters by the name Prince
+  rename(babies = name) %>% # rename the column 'name' to 'babies' 
+  group_by(year, sex) %>% #groups by the year and sex
+  summarise(total = sum(count)) %>% # creates a new column called total with the sum of all counts of each
+  arrange(desc(total)) # arranges the total in descending order (highest on top)
+```
+
+```{r eval = FALSE}
+mtcars %>%
+  summarise(avg_count = mean(cyl)) %>% #creates new column with the mean of cyl
+  mutate(ratio = mpg/cyl) %>% # creates new column called 'ratio' that gives the value for each row
+  filter(mpg > 30) %>% # filters where this condition is true
+  select(mpg, cyl) # selects the named columns 
+
+```
+
+## Join
+```{r eval = FALSE}
+left_join() # Output has all the cases from the Left, even if there is no match in the right
+right_join() # Output has only the cases from the Left with a match in the Right 
+full_join() # The output will have all the cases from both the Left and the Right
+inner_join() # lets you choose the cases you want in that list 
+```
+
+```{r results = "hide"}
+InfantMortality <- CountryCentroids %>%
+  select(name, iso_a3) %>%
+  left_join(CountryData %>% select(country, infant), by = c("name" = "country")) # left joins the DF Countrydata matching name to country
+
+MigrationFlows %>%
+  left_join(InfantMortality, by = c("destcode" = "iso_a3"))
+```
+
+## Wide and Narrow tables
+
+`gather()` transforms wide into narrow
+`spread()` transforms narrow into wide
+```{r eval = FALSE}
+BP_narrow <- BP_wide %>%
+  gather(key = when, value = sbp, before, after) # Key and Value are default
+# 'when' is the new column name. sbp column name, before and after in the when with the values in sbp
+
+BP_wide <- BP_narrow %>%
+  spread(key = when, value = sbp) # splits up the values of when into 2 different columns, their values in their columns
+```
+
+## Separate()
+```{r eval = FALSE}
+separate(key, into = c("Part", "Measure"), sep = "\\.") 
+# separate the column Key into 2 columns, Part and Measure 
+# separate by the .
+# Can also do sep = "-"
+```
+
+## Apply
+`sapply` 
+* Takes in list 
+* Returns vector, matrix, array 
+
+`lapply` 
+* Takes in list
+* Returns list
+
+`vapply` 
+* Takes in list
+* Returns vector, matrix, array 
+* Need to specify FUN.VALUE = numeric(1)
+
+# Graphs
+
+

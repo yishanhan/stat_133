@@ -1,0 +1,69 @@
+---
+title: "Homework 5"
+author: "Yishan Han"
+date: "Feb 19 2016"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(ggthemes)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+```{r}
+download.file("http://tiny.cc/dcf/ScorecardSmall.Rda",
+              destfile = "ScorecardSmall.Rda")
+load("ScorecardSmall.Rda")
+```
+
+```{r echo = FALSE}
+Scorecardnew <- ScorecardSmall %>% 
+  filter(CONTROL == 1 | CONTROL == 2) %>%
+  select(ADM_RATE, NPT41_PUB, NPT43_PUB, NPT45_PUB, NPT41_PRIV, NPT43_PRIV, NPT45_PRIV)
+```
+
+```{r echo = FALSE}
+Scorecard_narrow <- Scorecardnew %>%
+  gather(key = TYPE, value = COST, NPT41_PUB, NPT43_PUB, NPT45_PUB, NPT41_PRIV, NPT43_PRIV, NPT45_PRIV)
+```
+
+```{r echo = FALSE}
+Scorecard_narrow1 <- Scorecard_narrow %>%
+  mutate(CLASS = derivedFactor(
+    "Private" = (TYPE =="NPT41_PRIV" | TYPE == "NPT43_PRIV" | TYPE == "NPT45_PRIV"), 
+    .method = "first", .default = "Public")) %>%
+  mutate(Quarter = derivedFactor(
+    "Q1" = (TYPE == "NPT41_PRIV" | TYPE == "NPT41_PUB"),
+    "Q3" = (TYPE == "NPT43_PRIV" | TYPE == "NPT43_PUB"), 
+    .method = "first", .default = "Q5")) %>%
+  transform(Net_Cost = COST / 1000) %>%
+  transform(ADM_RATE= ADM_RATE * 100 )
+```
+
+```{r warning = FALSE}
+Scorecard_narrow1 %>% ggplot(aes(x = ADM_RATE, y = Net_Cost)) + 
+  geom_point(shape = 1, color = "blue", alpha = "0.25") + 
+  geom_smooth(color = "red") +
+  ylim(0,50) + 
+  labs(title = "Score Card", x = "Admission rate, %", y = "Net cost per year") + 
+  theme_igray() + 
+  theme(plot.title = element_text(size = 25, color = "black"),
+        axis.title.x = element_text(size = 15, color = "black"), 
+        axis.title.y = element_text(size = 15, color = "black")) + 
+  facet_grid(CLASS~Quarter)
+```
+
+
+
+
+
+

@@ -1,0 +1,74 @@
+---
+title: "Lab 12"
+author: " Yishan Han"
+date: "4/20/16"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## Question 1
+
+```{r, eval = FALSE}
+CarRegistrations %>%
+  filter(color == "blue", grepl(^[38].*[OQ].*[S8].*, plate), grepl(^[913.*], zip))
+```
+
+## Question 2
+1. 
+```{r, eval = FALSE}
+crossword %>%
+  filter(grepl(^s[a-z]i[a-z]{2}, word, ignore.case = FALSE)) 
+```
+
+2. 
+
+```{r, eval = FALSE}
+crossword %>%
+  filter(definition == "grind one's teeth", grepl(^g[a-z]{3}h$, word, ignore.case = FALSE))
+```
+
+## Question 3
+
+1. 
+* "Get on the bus"
+* "Got on my plane"
+* "Get off the bus"
+2. The phrases that I wrote in part 1 would be the phase that would be extracted. 
+
+## Question 7
+It will return the unique number of lines 
+
+## Question 8
+
+newdata.csv will contain objects that contain the word "California", separated by commas, taking the columns 3 to 7 from the original data.csv file 
+
+## Question 9
+
+* +: 1 or more 
+* *: 0 or more 
+* ?: 0 or 1
+
+## Question 10
+
+* dddsn
+* adsm
+* dm
+* ssn
+* dsmn
+
+## Question 11
+This is a problem because the gsub of `<.*>` may take everything inside of <text>One<text> as one thing to replace with "". This would mean that all of above will just go to "", instead of having <>. In other words, this code does not take into account that `<.*>` has multiple parts to it. 
+
+

@@ -1,0 +1,47 @@
+---
+title: "Lab 9"
+author: "Yishan Han"
+date: "3/30/16"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+How many Humans
+
+egrep human stars.csv| wc -l
+
+
+How many Jedis
+
+egrep [^_]jedi stars.csv | grep -v name| wc -l 
+
+Names of Jedis
+
+egrep [^_]jedi stars.csv | grep -v name| cut -f 1 -d "," 
+
+Name of Jedis in Alphabetical 
+
+egrep [^_]jedi stars.csv | grep -v name| cut -f 1 -d "," | sort
+
+
+Table of frequencies of number of weapons 
+
+cut -f 13 -d "," stars.csv |sort |uniq -c | grep -v weapon
+
+
+Table in decreasing order
+
+cut -f 13 -d "," stars.csv |sort |uniq -c | grep -v weapon | sort -n -r
+

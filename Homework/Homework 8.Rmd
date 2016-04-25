@@ -1,0 +1,105 @@
+---
+title: "Homework 8"
+author: "Yishan Han"
+date: ""
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+```{r}
+Addresses <- read.file("http://tiny.cc/dcf/street-addresses.csv")
+```
+
+### Start with ST|RD|ROAD
+```{r}
+pattern <- "(ST|RD|ROAD)" # Line 1
+LeftOvers <- # Line 2
+  Addresses %>% # Line 3
+  filter( ! grepl(pattern, address), # Line 4
+          ! grepl(" APT|UNIT [[:digit:]]+$", address)) # Line 5
+```
+
+* Line 1: Name the desired pattern we want as `pattern`
+* Line 2: Create a new variable called `LeftOvers` 
+* Line 3: Pipe in the data table `Addresses` 
+* Line 4: Filter by `pattern` using the `grepl()` in the `address` column. Here, we are filtering by all the observations that do not contain the pattern. 
+* Line 5: Filter by the words `"APT" or "UNIT" followed by digits in the `address` column. Here, we are filtering by all the observations that do not contain the pattern. 
+
+### Add to ST|RD|ROAD
+
+We want to find all the street endings and add them to the pattern.
+```{r}
+pattern <- "(ST|RD|ROAD|CIRCLE|WAY|TRAIL|AVE|LN|DR|DRIVE|CT|COURT|PATH|BLVD|LOOP|SQUARE|PKWY|SQ|PLACE|PL|TERRACE|VALLEY|ALLEY|EDGE|RIDGE|CENTER|COVE|MEADOW|TRL|TRAIL|HWY|HILLS|OAK|POINT|LANE|PT|CIR|HALL|TR)" # Line 1
+LeftOvers <- # Line 2
+  Addresses %>% # Line 3 
+  filter(! grepl(pattern, address), # Line 4
+         ! grepl(" APT|UNIT [[:digit:]]+$", address), # Line 5
+         ! grepl("BOX[[:blank:]]+([[:digit:]]+)", address), # Line 6
+         ! grepl("BOX[[:blank:]]+BO", address), # Line 7
+         ! grepl("BX[[:blank:]]+([[:digit:]]+)", address), # Line 8
+         ! grepl("BOX[[:blank:]]+([[:alpha:]]+)", address), # Line 9 
+         ! grepl("BOX+([[:digit:]]+)", address), # Line 10
+         ! grepl("PO[[:blank:]]+BO", address), # Line 11
+         ! grepl("P[[:blank:]]+O", address), # Line 12
+         ! grepl("PO[[:blank:]]+([[:digit:]]+)", address)) # Line 13
+```
+
+* Line 1: Name the desired pattern we want as `pattern`
+* Line 2: Create a new variable called `LeftOvers` 
+* Line 3: Pipe in the data table `Addresses` 
+* Line 4: Filter by `pattern` using the `grepl()` in the `address` column. Here, we are filtering by all the observations that do not contain the pattern. 
+* Line 5: Filter by the words `"APT" or "UNIT" followed by digits in the `address` column. Here, we are filtering by all the observations that do not contain these words. 
+* Line 6 - 13: Filter by the `grepl()` and filter out all the observations that do not contain any variations of "PO BOX". 
+
+### Count how many addresses there are of each kind of road word
+
+Now, instead of filtering out all the `grepl()` with the patterns, we keep all the ones that follow the `pattern` that we have listed. We filter out all the other variations of "PO BOX". 
+
+```{r}
+pattern <- "(ST|RD|ROAD|CIRCLE|WAY|TRAIL|AVE|LN|DR|DRIVE|CT|COURT|PATH|BLVD|LOOP|SQUARE|PKWY|SQ|PLACE|PL|TERRACE|VALLEY|ALLEY|EDGE|RIDGE|CENTER|COVE|MEADOW|TRL|TRAIL|HWY|HILLS|OAK|POINT|LANE|PT|CIR|HALL|TR)" # Line 1
+RoadWords <- # Line 2
+  Addresses %>% # Line 3 
+  filter( grepl(pattern, address), # Line 4
+         ! grepl(" APT|UNIT [[:digit:]]+$", address), # Line 5
+         ! grepl("BOX[[:blank:]]+([[:digit:]]+)", address), # Line 6
+         ! grepl("BOX[[:blank:]]+BO", address), # Line 7
+         ! grepl("BX[[:blank:]]+([[:digit:]]+)", address), # Line 8
+         ! grepl("BOX[[:blank:]]+([[:alpha:]]+)", address), # Line 9 
+         ! grepl("BOX+([[:digit:]]+)", address), # Line 10
+         ! grepl("PO[[:blank:]]+BO", address), # Line 11
+         ! grepl("P[[:blank:]]+O", address), # Line 12
+         ! grepl("PO[[:blank:]]+([[:digit:]]+)", address)) # Line 13
+
+
+RoadWord <- "ST|RD|ROAD|CIRCLE|WAY|TRAIL|AVE|LN|DR|DRIVE|CT|COURT|PATH|BLVD|LOOP|SQUARE|PKWY|SQ|PLACE|PL|TERRACE|VALLEY|ALLEY|EDGE|RIDGE|CENTER|COVE|MEADOW|TRL|TRAIL|HWY|HILLS|OAK|POINT|LANE|PT|CIR|HALL|TR"
+
+RoadWord <- unlist(strsplit(RoadWord, "\\|"))
+Number <- numeric(length(RoadWord))
+
+for (i in 1:length(RoadWord)) {
+  Number[i] <- length(grep(RoadWord[i], RoadWords$address))
+}
+Table <- data.frame(RoadWord, Number)
+
+```
+
+This table shows how many address there are of each kind of road word in order of number of appearance
+
+```{r}
+Table %>% arrange(desc(Number))
+```
+
+
+

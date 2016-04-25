@@ -1,0 +1,54 @@
+---
+title: "Small Project"
+author: "Yishan Han"
+date: "1/29/2016"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+I downloaded the data from (http://tiny.cc/dcf/Library-small.rda) 
+
+# **Basics**
+```{r echo = FALSE}
+load("Library-small.rda")
+```
+
+``` {r}
+nrow(Bks)
+nrow(Inv)
+names(Bks)
+names(Inv)
+dim(Bks)
+dim(Inv)
+```
+`nrow(Bks)` and `nrow(Inv)` show the number of rows in the `Bks` and `Inv` tables. 
+`names(Bks)` and `names(Inv)` show the names of all the columns and rows in the `Bks` and `Inv` tables, respectively. 
+`dim(Bks)` and `dim(Inv)` show the dimensions of the tables. 
+
+# **The number of books with each different current status**
+```{r echo = FALSE}
+Inv %>%
+  group_by(Current.Status) %>%
+  tally()
+```
+
+# **How many books have been checked out**
+```{r echo = FALSE}
+Inv %>%
+  group_by(Issued.Count) %>%
+  tally()
+``` 
+The first column shows how many books have been issued and the right column shows how many times they have been issued. 

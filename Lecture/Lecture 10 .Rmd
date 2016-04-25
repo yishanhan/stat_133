@@ -1,0 +1,507 @@
+---
+title: "Lec10 edited by Yishan"
+author: "stat 133"
+date: "February 10 2016"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+#Today
+1. New printr package for making nice tables
+2. More on Joins (Chapter 7)
+3. ggplot from DataCamp's ggplot2 (1) course including wide versus narrow data table format
+
+# 1. printr
+
+Here is a print out of BabyNames rendered using knitr (it looks like the printout at the console):
+
+```{r}
+head(mtcars)
+```
+
+To produce more publication quality tables use the new package printr. It isn't available yet on the CRAN repository so you have to install it by running the following chunk (you neeed to run it not just Knit HTML).
+
+
+```{r, message=FALSE,eval=FALSE}
+install.packages(
+  'printr',
+  type = 'source',
+  repos = c('http://yihui.name/xran', 'http://cran.rstudio.com')
+)
+
+
+```
+Once you install it you will see prinr in your packages list in rstudio. You only have to do this once.
+
+Next you need to remember to put library(printr) in a chunk in your rmarkdown file.
+```{r}
+library(printr)
+```
+
+Here is a print out of mtcars now:
+
+```{r}
+head(mtcars)
+```
+```{r}
+
+```
+
+
+
+
+# 2. Joins
+
+Each of the data verbs described until now takes one one data table as an input. Join is different. It’s well named: it brings together two data tables. Once you can join two data tables, you can join any number of data tables by repeated joins. Joining is at the heart of combining data from multiple sources.
+
+It’s conventional to refer to the two tables as the “left” and “right” tables.
+
+To illustrate the differences and similarities between the different kinds of join, suppose you have these two tables:  
+
+```{r datasetup,echo=FALSE, message=FALSE}
+set.seed(42)
+codes <- sort(round( runif(10,min=10000,max=99999)))
+Left <- data.frame( clinicName=LETTERS[1:9],
+                    postalCode=codes[c(1,2,3,2,4,5,6,6,7)],
+                    y=9:1,x=1)
+Right <- data.frame( postalCode=codes[c(2,1,1,9,8,4)], over65=round(runif(6,0,100))/100,y2=9:4,x2=2)
+Connections <- inner_join( Left, Right ) 
+JustMatches <- semi_join( Left, Right )
+LL <- select( Left, clinicName, postalCode )
+RR <- select( Right, postalCode, over65 )
+```
+
+To illustrate the differences and similarities between the different kinds of join, suppose you have these two tables:
+
+* Left: cases are medical clinics. The variables: `clinicName`, `postalCode`.  Each clinic does multiple procedures. 
+
+```{r,echo=FALSE}
+Left %>% select(clinicName, postalCode )
+```
+
+* Right: cases are postal codes. Variables reflect the demographics of that postal code: `postalCode`, `over65`, etc.
+```{r, echo=FALSE}
+Right %>% select(over65, postalCode  )
+```
+
+
+Variables that appear in both the left and right tables are called "overlap variables."  The only overlap variable here is `postalCode`.
+
+The overlap variables determine which cases will go into the output table.  In this example, there is just one overlap variable: `postalCode`.   
+
+The diagram below shows the cases in the left and right tables.  The lines show the matches between left and right. The cases connected by a match are the overlap cases; there are five of them in the diagram.  Cases without a match also appear in both the left and right tables.
+
+```{r exampleplot,echo=FALSE}
+ggplot() + geom_text(data=Left, 
+                      aes(x=x,y=y,label=postalCode)) +
+           geom_text(data=Left, 
+                      aes(x=x-1,y=y,label=clinicName)) +
+           geom_text(data=Right, 
+                      aes(x=x2,y=y2,label=postalCode)) +
+           geom_text(data=Right, 
+                      aes(x=x2+1,y=y2,label=over65)) + 
+           geom_segment(data=Connections, size=3, alpha=.5, 
+               aes(x=x+.13,y=y,xend=x2-.13,yend=y2)) +
+  theme(
+    plot.background = element_blank()
+   ,panel.grid.major = element_blank()
+   ,panel.grid.minor = element_blank()
+   ,panel.border = element_blank()
+  ) +
+  scale_x_continuous(breaks=NULL,limits=c(-.5,3.5)) +
+  scale_y_discrete(breaks=NULL) + xlab("") + ylab("")
+
+```
+
+
+Note that there are three different kinds of cases here:
+
+1. The matching cases that are in both the left and right. These come as pairs: the cases connected by a line in the diagram.
+2. Non-matching ones in the left.
+3. Non-matching ones in the right.
+
+
+There are different types of join. The type of join specifies whether you want to include in the output the matching cases, the matching pairs, or the non-matching cases.  
+
+#### Inner Join
+
+An *inner join* gives the matching pairs.  Note that clinic A, which had two matches in the right table, appears twice, once for each matching pair in which clinic A is involved.
+
+```{r, message=FALSE}
+LL %>% inner_join(RR, by=c("postalCode"="postalCode"))
+```
+
+#### Outer Join
+
+An *outer join* can include cases where there is no match. You might want to include the unmatched cases from the left table, from the right table, or from both tables. 
+
+##### Unmatched cases from the left table
+
+```{r, message=FALSE}
+LL %>% left_join( RR)
+```
+
+##### Unmatched cases from the right table
+
+```{r, message=FALSE}
+LL %>%  right_join(RR) 
+```
+
+##### Unmatched cases from both tables
+
+```{r, message=FALSE}
+LL %>% full_join(RR)
+```
+
+
+###Task For You:
+
+Here is a left and right data table:
+
+```{r}
+Left <- CountryCentroids %>% select(name, iso_a3) %>% tail()
+Left
+
+Right <-  CountryData %>% select(country,life, infant) %>% tail()
+Right
+
+
+```
+
+Make the following join:
+```{r}
+Left %>% 
+  inner_join(Right, by = c("name" = "country"))
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+Left %>% inner_join(Right, by=c("name"="country"))
+```
+
+# 3. Chapter 2 *Data* in course ggplot2 (1) in Data Camp
+
+we will work with the mtcars data set
+```{r}
+mtcars_m <- mtcars %>% 
+  filter(am==0)
+
+mtcars_a <- mtcars %>%
+  filter(am==1) 
+  
+head(mtcars_a)
+```
+
+
+
+
+##ggplot2 versus base package
+
+Before ggplot there was plotting with the *base R package*. Many research papers still make their plots with base package so you should be familiar with it.
+
+### example 1
+
+In base package if you want to make a scatter diagram of `wt` versus `mpg`  in `mtcars` for manual cars
+```{r}
+
+plot( mtcars_m$wt,mtcars_m$mpg, col=as.factor(mtcars_m$cyl))
+```
+
+That is fine but, suppose we wish to add an additional layer of points corresponding to cars with automatic transmission
+
+```{r}
+
+plot(mtcars_m$wt,mtcars_m$mpg,  col=as.factor(mtcars_m$cyl))
+points( mtcars_a$wt,mtcars_a$mpg, col="blue")
+```
+
+Here we see a major limitation of base package drawing. 
+
+1. Plot doesn't get redrawn 
+2. Plot is drawn as an image (every layer is drawn on top of the image. In ggplot the plot is an object which we can change)  
+3. We need to add a legend ourselves (you may forget what the different colors mean when you go into manually make a legend)  
+
+In ggplot we would have:
+
+```{r}
+mtcars %>% ggplot(aes(x=wt,y=mpg)) + geom_point(aes(col=as.factor(cyl))) + facet_wrap(~am)
+```
+
+### task for you
+
+The vector `precip` gives the yearly precipitation in differnt cities. Using the base package function `hist` make a histogram of `precip` (hint: try `hist(precip)`). Next make the plot in ggplot using the `geom_histogram()` function. You will need to convert the vector `precip` to a data frame using `as.data.frame(precip)`. This might be helpful:[ggplot2.org](http://docs.ggplot2.org/current/index.html)
+```{r}
+hist(precip)
+as.data.frame(precip) %>% ggplot(aes(precip)) + geom_histogram(binwidth = 10)
+
+```
+
+
+```{r, include=FALSE}
+hist(precip)
+as.data.frame(precip) %>% ggplot(aes(precip)) +geom_histogram(binwidth = 10)
+```
+
+
+### example 2
+
+
+As another example, suppose we wish to make a linear model of how mpg varies with car weight.
+
+```{r}
+# Use lm() to calculate a linear model and save it as carModel
+carModel <- lm(mpg ~ wt, data = mtcars_m)
+carModel
+
+```
+
+We see that the best fitting line through the scatter plot for the manual transmission cars is $$ mpg= -9*wt + 46.3   $$
+
+We can draw the regression line through our plot for manual transmission cars. The legend is hard to make manually.
+
+```{r}
+plot(mtcars_m$wt,mtcars_m$mpg,  col=as.factor(mtcars_m$cyl))
+carModel <- lm(mpg ~ wt, data = mtcars_m)
+abline(carModel, lty = 2)
+legend(x = 5, y = 25, legend = levels(as.factor(mtcars_m$cyl)), col = 1:3, pch = 1, bty = "n")
+```
+
+In fact you can draw the regression line for each cylinder type.
+
+```{r}
+plot(mtcars_m$wt,mtcars_m$mpg,  col=as.factor(mtcars_m$cyl))
+abline(lm(mpg ~ wt, data = mtcars_m, subset= (cyl ==4)), lty = 2)
+abline(lm(mpg ~ wt, data = mtcars_m, subset= (cyl ==6)), lty = 2)
+abline(lm(mpg ~ wt, data = mtcars_m, subset= (cyl ==8)), lty = 2)
+legend(x = 5, y = 25, legend = levels(as.factor(mtcars_m$cyl)), col = 1:3, pch = 1, bty = "n")
+```
+
+or more efficiently using `lapply()` which you will learn about in the data camp course *intermediate R* soon.
+
+```{r, eval=FALSE}
+plot(mtcars_m$wt,mtcars_m$mpg,  col=as.factor(mtcars_m$cyl))
+lapply(mtcars_m$cyl, function(x) {
+  abline(lm(mpg ~ wt, mtcars_m, subset = (cyl == x)), col = x)
+  })
+legend(x = 5, y = 25, legend = levels(as.factor(mtcars_m$cyl)), col = 1:3, pch = 1, bty = "n")
+```
+
+In ggplot it is much easier. Note that we put the color aesthetic in the ggplot frame instead of geom_point since we want both the points and the regression lines to be categorized by color.
+
+```{r}
+mtcars_m %>% ggplot(aes(x = wt, y = mpg, col = as.factor(cyl))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+### Wide versus Narrow data tables (chapter 11)
+
+A data table can be presented in wide or narrow format. Each have their own advantatges. 
+```{r,echo=FALSE}
+
+
+BP_wide <- data.frame( subject=c("BHO","GWB","WJC"),
+                    before=c(120,115,105),
+                    after=c(160,135,145))
+BP_narrow <- data.frame( subject=c("BHO","GWB","WJC","GWB","WJC","BHO"), when=c("before","before","after","after","before","after"), sbp=c(160,115,145,135,105,160))
+
+```
+Wide format is easier to get the difference of before and after of a test for each patient.
+```{r}
+BP_wide
+
+```
+
+Narrow format is easier to include additional cases  of a patient if they are tested on different days. A narrow format is sometimes called a tidy data table.
+
+```{r}
+BP_narrow
+```
+
+The data verbs 'spread()` and `gather()` convert between these formats.
+
+### `gather()`  transforms *BP_wide* into *BP_narrow*
+
+The *key* variable is the name of the new variable in the narrow format that is *gathered*. 
+Eg. in the table before, 'before' and 'after' are going to be included in the 'when'. Gathering the values from
+'before' and 'after'. We called these 'sbp' values 
+
+```{r}
+BP_narrow1 <-  BP_wide %>%
+  gather(key= when, value = sbp, before, after)
+BP_narrow1
+```
+
+
+### `spread()`  transforms *BP_narrow* into *BP_wide*
+
+The *key* variable is the name of the original variable in the narrow format that is *spread*. "value" is 
+the value from old table that gives the new table columns 
+```{r}
+BP_wide1 <-  BP_narrow %>% 
+  spread(key= when, value = sbp)
+BP_wide1
+```
+
+### task for you
+
+Is the following data set narrow or wide? Convert it to the other data table format.
+
+```{r,echo=FALSE}
+Baby_narrow <- BabyNames %>% 
+  filter(name == "Sue") %>%
+  group_by(name,sex) %>%
+  summarise(total=sum(count))
+Baby_narrow
+```
+
+
+```{r}
+Baby_narrow %>% spread(key=sex, value= total )
+```
+
+
+
+### Examples:
+
+
+Lets examine the iris data table:
+
+```{r}
+head(iris)
+```
+
+#### example 1
+
+Suppose you want to make the following plot:
+
+
+```{r, echo=FALSE}
+iris.tidy <- iris %>%
+  gather(key, Value, -Species) %>%
+  separate(key, c("Part", "Measure"), "\\.") 
+
+ggplot(iris.tidy, aes(x = Species, y = Value, col = Part)) +
+  geom_jitter() +
+  facet_grid(. ~ Measure)
+```
+
+The data table `iris` isn't gyph ready. We need variable names , `Species`, `Part`, `Measure` and `Value`:
+
+```{r,echo=FALSE}
+head(iris.tidy)
+```
+
+To achieve this first we create a `key` column with the `gather()` command.
+```{r}
+iris %>%
+  gather(key, Value, -Species) %>%
+  head()
+```
+
+This `key` column contains values like Sepal.Width that we want to separate into `Sepal` and `Width`. These parts will later go into a `Parts` variable.
+
+Next we separate the key column into a Part and Measure column with separate()
+
+```{r}
+iris.tidy <- iris %>%
+  gather(key, Value, -Species) %>%
+  separate(key, c("Part", "Measure"),  "\\.") 
+iris.tidy %>% head()
+```
+
+#### example 2
+Suppose we modify `iris` so that it has a new variable `Flower` so that iris contains unique ids
+```{r}
+iris<- iris %>% mutate(Flower=1:nrow(iris))
+head(iris)
+```
+
+
+Suppose you want to make the following plot:
+
+```{r, echo=FALSE}
+iris.wide <- iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  separate(key, c("Part", "Measure"), "\\.") %>%
+  spread(Measure, value)
+ggplot(iris.wide, aes(x = Length, y = Width, col = Part)) +
+  geom_jitter() +
+  facet_grid(. ~ Species)
+```
+
+`iris` isn't glyph ready. We need the table:
+
+```{r, echo=FALSE}
+iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  separate(key, c("Part", "Measure"), "\\.") %>%
+  spread(Measure, value) %>%
+  head()
+
+```
+
+To achieve this we first first we create a `key` column with the `gather()` command.
+```{r}
+iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  head()
+```
+
+Next we separate the key column into a Part and Measure column with separate()
+
+```{r}
+iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  separate(key, c("Part", "Measure"), "\\.") %>%
+  head()
+```
+
+
+The last step is to use `spread()` to distribute the new `Measure` column and `Value` column into two columns. We are essentially spreading each case in two.
+```{r}
+iris.wide <- iris %>%
+  gather(key, value, -Species, -Flower) %>%
+  separate(key, c("Part", "Measure"), "\\.") %>%
+  spread(Measure, value) 
+iris.wide %>% head()
+```
+
+
+
+
+
+
+### Aesthetics versus fixed attributes
+
+Data camp uses the word aesthetic to mean a mapping from a visual property to a variable. This is actually a scale according to our book's definition but nevermind that. In the real world people abuse language and use the word aesthetic when they really mean a scale.
+
+An attribute is different from an aesthetic (i.e. a scale). An attribute sets color equal to a constant, for example "red" instead of a variable.
+
+example:   
+x,y, col are aesthetics
+```{r}
+mtcars %>% ggplot(aes(x=wt,y=mpg)) + geom_point(aes(col=as.factor(cyl))) 
+```
+
+x,y are aesthetics, col is an attribute
+```{r}
+mtcars %>% ggplot(aes(x=wt,y=mpg)) + geom_point(col="red") 
+```
+
+Note: attributes don't have a legend.
+
+### iclicker queston

@@ -1,0 +1,100 @@
+---
+title: "Homework 9"
+author: "Yishan Han"
+date: "3/30/16"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(rvest)
+library(lubridate)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+```{r}
+page <- "http://en.wikipedia.org/wiki/List_of_nuclear_reactors"
+xpath <- '//*[@id="mw-content-text"]/table' 
+table_list <- page %>%
+  read_html() %>%
+  html_nodes(xpath = xpath) %>%
+  html_table(fill = TRUE)
+
+japan = table_list[[23]]
+names(japan)
+
+```
+### Rename 
+```{r}
+colnames(japan) <- c("Name", "Reactor No.", "Reactor Type", "Reacter Model", "Status", "Capacity in MW Net", "Capacity in MW Gross", "Construction Start Date", "Commercial Operation Date", "Closure")
+japan = japan[-1,]
+```
+
+### Quick Visualization
+
+```{r}
+japan <- japan %>%
+  mutate(start_year = lubridate::dmy(`Construction Start Date`)) %>%
+  mutate(end_year = lubridate::dmy(`Commercial Operation Date`))
+
+japan %>%
+  ggplot(aes(x = start_year, y = `Capacity in MW Net`, color = `Reactor Type`)) + geom_point()
+```
+
+### Construction
+
+```{r}
+japan <- japan %>%
+  mutate(reactor_name_new = paste(Name,`Reactor No.`, sep = " ")) %>%
+  mutate(Name_short = ifelse(grepl("[1]", reactor_name_new), gsub("[1]", "", reactor_name_new), ""))
+
+japan %>%
+  ggplot(aes(x = start_year, y = reactor_name_new)) + geom_segment(aes(xend = end_year, yend = reactor_name_new), position = "identity") + labs(x = "Construction Start", y = "Reaction site") + scale_y_discrete(label = japan$Name_short) 
+```
+
+### Part 2
+1. 
+cd /Users/yishanhan/Documents/Spring\ 2016/Stat\ 133
+mkdir lifespan
+
+2. 
+mv ~/Downloads/lifeexpectancy.csv .
+mv ~/Downloads/makemaps-1.R .
+
+ls lifespan 
+
+3. 
+less lifeexpectancy.csv
+
+4. 
+wc -l lifeexpectancy.csv 
+
+5. 
+152, 177, 202 
+
+6. 
+cat lifeexpectancy.csv | cut -f 1,152,177,202 -d "," lifeexpectancy.csv 
+
+7. 
+egrep "[0-9]" lifeexpectancy.csv| cut -f 1,152,177,202 -d ","  > lifeexpectancy.clean.csv
+
+### Extra Credit: 
+1. The primary plot type that Rosling uses is a bubble chart/plot. 
+
+2. If we wanted to create something similar in R, the additional data that we would need is the income levels of the countries and years given in the lifeexpectancy.csv file. 
+
+3. Hans used enhancing techniques such as 
+* Dividing all countries up by their geographical regions and coloring the regions different colors
+* Matching the size of population to the size of the bubbles to enhance the visuals for audience
+* The year of the data given is shown in large size on the bottom righthand side of the graph. This shows the changes of the countries more dramatically over the passage of time. 
+
+The first two techniques can be done in R by setting the aesthetics of the graph to match the color and size. 
+

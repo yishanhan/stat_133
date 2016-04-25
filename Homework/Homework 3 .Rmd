@@ -1,0 +1,158 @@
+---
+title: "Assignment 3"
+author: " Yishan Han"
+date: "2/7/2016"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(ggplot2)
+library(mosaicData)
+
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+
+## Problem 5.4 
+```{r}
+ggplot(data=CPS85,aes(x=exper,y=wage))+geom_point()+aes(colour=married)+facet_wrap(~sector,ncol=4) 
+```
+
+I first found the data set `CPS85`, giving the frames x axis and y axis to be equal to `experience` and `wage`, respectively. I set the glyph to point and set `married` map to the colors. Finally, I added facets to the `sectors`, setting the number of columns to 4. 
+
+## Problem 6.2 
+1.	Guides 
+* `Molecule` is mapped to color of the dots
+* `Gene` is mapped to the x axis 
+* `Log enzyme concentration` is mapped to the y axis 
+* `Flux` is mapped to the empty and filled dots and it shown by the guide box
+* `Target` is mapped to the overhead labels 
+
+2.
+* `Molecule` is mapped to color of the dots
+* `Gene` is mapped to the x axis 
+* `Log enzyme concentration` is mapped to the y axis 
+* `Flux` is mapped to the empty and filled dots and it shown by the guide box
+* `Target` is mapped to the overhead labels 
+
+3.	The frame is set by the `gene` and `log enzyme concentration` 
+
+4.	It is set by the `gene` and `target` variables 
+
+## Problem 6.3 
+1.	For the first line glyph, there is a dot and the center is mapped to the red dot. 
+There is also the line, which the low and high is mapped to the length of the line. polarity is mapped to the color, protein names is mapped ot the labels. 
+
+For the second star glyph, the significance variable is mapped to the number of stars, and the x and y position. 
+
+2.	The types of `protein` and `log2 ratio low vs high cell density` define the frame. The y coordinates represent the `log2 ratio low vs high cell density`, which is mapped to the `center`. The x coordinates represent the `protein`, which is mapped to the `protein` names from the data table. 
+
+3.	No, color is not an attribute. The number of stars is the attribute to the glyph 
+
+4.	There are tick marks and labels on the vertical axis and also statement of “apico-basal cell polarity proteins” to tell the readers what the lines represent. 
+
+## Problem 6.6 
+D 
+
+## Problem 6.8 
+```{r  warning = FALSE}
+NCHS %>%
+  ggplot(aes(x=bmi,y=weight))+geom_point()+aes(colour=smoker) 
+
+```
+
+* `Smoker` mapped to color 
+* `Weight` mapped to y axis 
+* `Bmi` mapped to x axis 
+
+## Problem 7.2 
+
+1. 
+
+```{r}
+diamonds %>% 
+  group_by(color) %>%
+  summarise(largestaverage = sum(carat)) %>%
+  arrange(desc(largestaverage)) %>%
+  head(1) 
+```
+
+2. 
+```{r}
+
+diamonds %>% 
+  group_by(clarity) %>%
+  summarise(average = mean(table/carat, na.rm = TRUE)) %>%
+  arrange(desc(average))%>%
+  head(1)
+```
+
+
+## Problem 7.4 
+a)	`group_by (“First”)` refers to `“First”` that is not previously defined. Instead of grouping the table by `“First”`, the statement simply creates another column in the table and gives all rows the statement `“First”`. It should be `name`. 
+
+b)	There is an error in `Summarise (Tmp, totalBirths = sum(count))`. The `Tmp` is not needed in this case. It should only just be `Summarise(totalBirths = sum(count))`. 
+
+c)	There is no chaining syntax here so the previous expression of `Tmp <- group_by` does not get passed through to the next summarise function. This causes the program to execute the two statements separately. We need a `%>%` after the `group_by(BabyNames, year, sex)` to create a table called Tmp. Also, another error is that there is no need to explicitly say the data name `BabyNames` in `summarise(BabyNames)` when we have already called the data table before. 
+
+## Problem 7.5
+a) 
+`arrange(sex, count)`
+
+b)
+`filter(sex == 'F')`
+
+c) 
+`filter(sex == 'M', count >= 22)`
+
+d) 
+`summarise(total = sum(count))`
+
+e) 
+`select(name, count)`
+   
+## Problem 7.6 
+1)	There are 80101 cases, each representing a vote 
+
+2)	The top 5 candidates were Betsy Hodges, Don Samuels, Mark Andrew, undervote, Jackie Cherryhomes 
+
+3)	First – 834 ballots 
+Second – 10598 ballots 
+Third – 19210 ballots 
+
+4) The top 3 combinations are Betsy Hodges, Mark Andrew, Don Samuels. 
+
+5) Precinct 6 has the highest number of ballots of 9711.
+
+## Problem 8.1 
+1)	Construct the graphics frame – (c) `ggplot()`
+
+2)	Add a layer of glyphs – (a) `geom_point` (b) `geom_histogram()` (g) `geom_segment()`
+
+3)	Set an axis label – (e) `ylab'
+
+4)	Divide the frame into facets – (f) `facet_wrap` (i) `facet_grid()`
+
+5)	Change the scale for the frame – (d) `scale_y_log10() (h) `xlim()`
+
+## Problem 8.2 
+1)	
+```{r warning = FALSE}
+CPS85 %>% 
+  ggplot(aes( x = age, y = wage)) + geom_point(aes(shape = married)) + facet_wrap( ~ sector, ncol = 3) + ylim(0,30)  +  theme(legend.position = 'top') 
+```
+
+2)
+```{r warning = FALSE}
+CPS85 %>%
+  ggplot(aes(x= age, y = wage)) + geom_point() + facet_grid(sex ~married) + xlim(20,60) + ylim(0,40)
+```

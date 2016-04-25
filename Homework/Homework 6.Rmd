@@ -1,0 +1,221 @@
+---
+title: "Homework 6"
+author: "Yishan Han"
+date: "24 Feb 2016"
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(ggthemes)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## Question 1
+
+```{r}
+leap <- function(year) {
+  if ((year %% 4 == 0 & year %% 100 != 0) | year %% 400 == 0){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+me <- (1995:2016)
+count <- 0
+for (i in (me)) {
+  if (leap(i)) {
+    count <- count + 1
+  }
+}
+
+```
+
+I've lived through `r count` leap years. 
+
+## Question 2
+(a)
+```{r}
+x <- runif(100, min = -1, max = 1)
+y <- runif(100, min = -1, max = 1)
+
+number <- 0
+for (i in 1:length(x)) {
+  if (x[i] ^ 2 + y[i] ^2 < 1){
+    number <- number + 1
+  }
+}
+print(number/100)
+ 
+df <- data.frame(x,y)
+
+new_table <- df %>%
+  mutate(Inside_circle = derivedFactor(
+    "TRUE" = (x^2 + y^2 < 1), .method= "first", .default = "FALSE"
+  ))
+
+ggplot(new_table, aes(x = x, y = y, col = Inside_circle)) + geom_point()
+```
+
+The proportion of point is `r number/100`. The area of the circle is approximated to be `r number/100 * 2 * 2`. 
+
+```{r}
+x <- runif(100, min = -2, max = 2)
+y <- runif(100, min = -2, max = 2)
+
+number <- 0
+for (i in 1:length(x)) {
+  if (x[i] ^ 2 + y[i] ^2 < 1){
+    number <- number + 1
+  }
+}
+print(number/100)
+
+df <- data.frame(x,y)
+
+new_table <- df %>%
+  mutate(Inside_circle = derivedFactor(
+    "TRUE" = (x^2 + y^2 < 1), .method= "first", .default = "FALSE"
+  ))
+
+ggplot(new_table, aes(x = x, y = y, col = Inside_circle)) + geom_point()
+```
+
+The proportion of point is `r number/100`. The area of the circle is approximated to be `r number/100 * 4 * 4`. 
+
+(b)
+
+```{r}
+
+f <- function(n = 100, plotit = TRUE){
+  
+  x <- runif(n, min = -1, max = 1)
+  y <- runif(n, min = -1, max = 1)
+
+  number <- 0
+  for (i in 1:length(x)) {
+    if (x[i] ^ 2 + y[i] ^2 < 1){
+      number <- number + 1
+    }
+  }
+
+  df <- data.frame(x,y)
+
+  new_table <- df %>%
+    mutate(Inside_circle = derivedFactor(
+    "TRUE" = (x^2 + y^2 < 1), .method= "first", .default = "FALSE"
+  ))
+  if (plotit){
+  ggplot(new_table, aes(x = x, y = y, col = Inside_circle)) + geom_point()
+  }
+  return(number/n * 2 * 2)
+}
+area <- f(400,TRUE)
+```
+The approximate area of the unit circle is `r area`. 
+
+(c) Replicate
+
+```{r}
+replicate_50 <- replicate(100,f(50))
+replicate_500 <- replicate(100,f(500))
+```
+
+(d) Histogram
+```{r warning = FALSE}
+x_50 <- rep(50,100)
+x_500 <- rep(500,100)
+x_axis <- c(x_50, x_500)
+y_axis <- c(replicate_50, replicate_500)
+table <- data.frame(x_axis, y_axis)
+
+  ggplot(table, aes(y_axis)) + geom_histogram(fill = 'blue', alpha = 0.5) + facet_grid(x_axis~.) + geom_vline(xintercept = pi, color = 'red') + 
+    theme_igray() + 
+    labs(title = "Histogram of estimated unit circle area", x = "Estimated unit circle area", y = "Count") + 
+    theme(plot.title = element_text(size = 20, color = "black"),
+        axis.title.x = element_text(size = 15, color = "black"), 
+        axis.title.y = element_text(size = 15, color = "black"))
+```
+
+## Question 3
+
+(a)
+
+```{r}
+newton_method <- function(x) {
+  fx <- x^2 + 2*x^2 - 7
+  fpx <- 3*x^2 + 4*x
+  while (abs(fx) > 0.00001){
+    x <- x - fx/fpx
+    fx <- x^2 + 2*x^2 - 7
+    fpx <- 3*x^2 + 4*x
+  }
+  return(x)
+}
+```
+
+(b)
+
+```{r}
+f <- function(x) {
+  return(x^3 + 2* x^2 - 7)
+}
+
+fp <- function(x) {
+  return(3*x^2 + 4*x)
+}
+```
+
+(c)
+
+```{r}
+newton_method <- function(x = 0, f = f, fp= fp) {
+  while (abs(f(x)) > 0.00001){
+    x <- x - f(x)/fp(x)
+  }
+  return(x)
+}
+```
+
+(d)
+
+```{r}
+
+x <- 5 # initial guess 
+f1 <- function(x) {
+  return(x^4 + 3*x^3 + x^2)
+}
+fp1 <- function(x) {
+  return(4*x^3 + 9 * x^2 + 2*x)
+}
+
+newton_method <- function(x = 5, f1 = f1, fp1 = fp1) {
+  xseq <- seq(-5, 5, length = 100)  #100 x values between -5 and 5
+  yseq <- f1(xseq)
+  df <- data.frame(xseq,yseq) #make a data frame with variables xseq and yseq
+  p <- df %>% ggplot(aes(x=xseq, y=yseq)) + geom_line(stat="identity", col="red")
+  while (abs(f1(x)) > 0.00001){
+    x <- x - f1(x)/fp1(x)
+    df = data.frame(a=x,b=f1(x))
+    p <- p + geom_point(x=x,y=f1(x),col="blue",size=3) 
+  }
+  p <- p + geom_hline(yintercept = 0)
+  print(x)
+  return(p)
+}
+newton_method(5, f1, fp1)
+
+```
+
+
+
+
+

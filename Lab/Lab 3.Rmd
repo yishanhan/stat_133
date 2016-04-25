@@ -1,0 +1,117 @@
+---
+title: "Lab 3"
+author: "Yishan Han"
+date: "Feb 3rd 2016"
+output: 
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+library(nycflights13)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+# Part 1 Frames, Glyphs, and other Components of Graphics
+
+1. What glyphs are used? 
+Line to show the different income groups 
+
+2. What are the aesthetics for those glyphs? 
+* X axis
+* Y axis
+* Position of the lines 
+
+3. Which variable is mapped to each aesthetic?
+* Income group is mapped to the facets and the position of the lines
+* The portion of annual family income is mapped to the Y axis 
+* Year is mapped to the X axis 
+
+4. Which variable, if any, is used for faceting?
+* Income group is used for faceting
+* There are 5 facets 
+* ie. poorest fifth of U.S. families, second-poorest fifth, middle fifth 
+
+5. What are the scales?
+* The percentage change in annual family income is shown by the length and height of the line - The greater the change, the longer the line
+
+* X axis is the year, from 1971 to 2011 
+* Y axis is the proportion of change in family incomes
+* Position of the lines show the income group
+
+6. What variables make up the frame:
+* Income group
+* Portion of family income
+* Year
+
+7. What are the guides?
+* Income group shown by the position of the lines
+* Portion of family income shown by the bold numbers
+* Year is divided by 1971 and 2011 to show the changes in year
+
+8. Write down what the glyph-ready dataframe looks like.
+
+Income group         | Portion of income in 1971 | Portion of income in 2011 
+---------------------|---------------------------|-----------------------------
+Poorest fifth        |     42                    | 114
+Second-poorest fifth |     19                    | 46
+Middle fifth         |     13                    | 29
+Next fifth           |     10                    | 19
+Wealthiest fifth     |      6                    |  9
+
+
+# Part 2 Data Wrangling
+```{r echo = FALSE}
+library(nycflights13)
+flights1 <-flights %>%
+  select( carrier, distance, dep_delay, origin) %>%
+  head(10)
+flights1
+```
+
+## Output A
+```{r echo = FALSE}
+flights2 <- flights1 %>%
+  arrange( distance)
+flights2
+```
+
+## Output B
+```{r echo = FALSE}
+flights3 <- flights1 %>%
+  filter(carrier == "UA")
+flights3
+```
+
+## Output C 
+```{r echo = FALSE}
+flights4 <- flights1 %>%
+  filter(carrier == "UA") %>%
+  head(2)
+flights4
+```
+
+## Output D
+```{r echo = FALSE}
+flights5 <- flights1 %>%
+  summarise(total = mean(dep_delay))
+flights5
+```
+
+## Output E
+```{r echo = FALSE}
+flights6 <- flights1 %>%
+  select(carrier, distance)
+flights6
+```
+
+
+
+

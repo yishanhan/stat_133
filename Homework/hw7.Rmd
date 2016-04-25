@@ -1,0 +1,141 @@
+---
+title: "Homework 7"
+author: ""
+date: ""
+output: 
+  html_document:
+    fig_height: 7
+    fig_width: 9
+---
+<!-- Don't edit in between this line and the one below -->
+```{r include=FALSE}
+# Don't delete this chunk if you are using the DataComputing package
+library(DataComputing)
+```
+*Source file* 
+```{r, results='asis', echo=FALSE}
+includeSourceDocuments()
+```
+<!-- Don't edit the material above this line -->
+
+## Time of Day 
+
+```{r}
+
+Stations <- mosaic::read.file("http://tiny.cc/dcf/DC-Stations.csv")
+data_site <- "http://tiny.cc/dcf/2014-Q4-Trips-History-Data-Small.rds" 
+Trips <- readRDS(gzcon(url(data_site)))
+```
+
+1)
+```{r}
+Trips %>% 
+  ggplot(aes(x = sdate)) + 
+  geom_density()
+```
+
+2)
+
+```{r}
+Trips <- Trips %>% 
+  mutate(time_of_day = lubridate::hour(sdate) + lubridate::minute(sdate) / 60)
+
+Trips %>% 
+  ggplot(aes(x = time_of_day)) + 
+  geom_density()
+```
+
+3)
+```{r}
+Trips <- Trips %>% 
+  mutate(time_of_week = lubridate::wday(sdate))
+
+Trips %>% 
+  ggplot(aes(x = time_of_week)) + 
+  geom_density()
+  
+```
+
+4. 
+```{r}
+Trips %>%
+  ggplot(aes(x = sdate)) + 
+  geom_density(aes(fill = client), alpha = 0.5, color = NA)
+```
+
+5. 
+```{r}
+Trips %>%
+  ggplot(aes(x = sdate)) + 
+  geom_density(aes(fill = client), alpha = 0.5, color = NA, position = position_stack())
+```
+
+Graph (4) is better. The graph in (5) stacks the second density plot on top of the other one. We lose a lot of information through this stacking because the shape of the second graph now depends on the shape of the first graph. This will also mean that the area under the density plot will no longer add up to 1, so the second graph is actually not interpretable. 
+
+6. 
+```{r}
+
+Trips1 <- Trips %>%
+  mutate(wday = ifelse(lubridate::wday(sdate) %in% c(1,7), "weekend", "weekday")) 
+
+Trips1 %>%
+  ggplot(aes(x = time_of_day)) + 
+  geom_density(aes(fill = client), alpha = 0.5, color = NA, position = position_stack()) + facet_grid(~wday)
+
+Trips1 %>%
+  ggplot(aes(x = time_of_day)) + 
+  geom_density(aes(fill = wday), alpha = 0.5, color = NA, position = position_stack()) + facet_grid(~client)
+```
+
+The second graph is better than the first. The second one is comparing the same type of clients, so the only difference between the two facets would be the factor time of the week, whether it is weekday or weekend. The first graph is comparing weekends to weekdays, which are inheritantly different anyways. 
+
+## Trip Distance
+
+1. 
+```{r}
+Left <- Stations %>%
+  select(name, lat, long) %>%
+  rename(sstation= name)
+
+Right <- Stations %>%
+  select(name, lat, long) %>%
+  rename(estation= name, lat2 = lat, long2 = long)
+```
+
+2. 
+```{r}
+Join <- Left %>%
+  merge(Right, all = TRUE)
+
+source("http://tiny.cc/dcf/haversine.R")
+```
+
+3. 
+```{r}
+Distances <- Join %>% 
+  mutate(dist = haversine(lat, long, lat2, long2)) %>%
+  select(sstation, estation, dist)
+
+Trips_Dist <- Trips1 %>%
+  merge(Distances, all = FALSE)
+```
+
+## Distributions of Distances
+1. 
+```{r warning = FALSE}
+Trips_Dist %>%
+  ggplot(aes(x = dist)) + geom_density() + facet_wrap(client ~ wday)
+```
+
+
+2. 
+```{r warning = FALSE}
+Trips_Dist <- Trips_Dist %>%
+  mutate(hour = lubridate::hour(sdate))
+
+Trips_Dist %>%
+  ggplot(aes(x = hour, y = dist)) + geom_boxplot(aes(group = hour), outlier.size = 1, fill = "gray") +  stat_smooth(method = "loess") + facet_grid(client ~ wday) + ylim(0,5)
+
+```
+
+
